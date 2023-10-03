@@ -171,12 +171,15 @@ class GridworldSearchProblem(SearchProblem):
             self.r0, self.c0 = map(int, lines[1 + self.r].split())
 
             # Initialize the visited and unvisited sets.
-            unvstd = set()
+            vstd, unvstd = set(), set()
             for r in range(self.r):
                 for c in range(self.c):
                     if self.grid[r][c] == 1:
-                        unvstd.add((r, c))
-            self.visited, self.unvisited = frozenset(), frozenset(unvstd)
+                        if r == self.r0 and c == self.c0:
+                            vstd.add((r, c))
+                        else:
+                            unvstd.add((r, c))
+            self.visited, self.unvisited = frozenset(vstd), frozenset(unvstd)
 
     def getStartState(self) -> "State":
         return self.r0, self.c0, self.visited, self.unvisited
@@ -186,9 +189,9 @@ class GridworldSearchProblem(SearchProblem):
 
     def getSuccessors(self, state: "State") -> List[Tuple["State", str, int]]:
         i, j, vstd, unvstd = state
-        deltas = {"UP": (-1, 0), "DOWN": (1, 0), "LEFT": (0, -1), "RIGHT": (0, 1)}
+        deltas = {"UP": (-1, 0), "RIGHT": (0, 1), "DOWN": (1, 0), "LEFT": (0, -1)}
         res = []
-        for action in ACTION_LIST:
+        for action in deltas:
             x, y = i + deltas[action][0], j + deltas[action][1]
             if 0 <= x < self.r and 0 <= y < self.c:
                 if self.grid[x][y] == 0:
@@ -232,7 +235,7 @@ def depthFirstSearch(problem: SearchProblem) -> List[str]:
             return actions
         if state in visited:
             continue
-        for next_state, action, _ in problem.getSuccessors(state):
+        for next_state, action, _ in problem.getSuccessors(state)[::-1]:
             stack.push((next_state, actions + [action], visited | {state}))
     return []
 
@@ -280,7 +283,7 @@ def customHeuristic(
             calls to GridworldSearchProblem.getSuccessors)
         (2) be admissible and consistent
     """
-    raise NotImplementedError
+    return 0
 
 
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[str]:
