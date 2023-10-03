@@ -162,24 +162,52 @@ class GridworldSearchProblem(SearchProblem):
 
     def __init__(self, file):
         """Read the text file and initialize all necessary variables for the search problem"""
-        "*** YOUR CODE HERE ***"
-        raise NotImplementedError
+        with open(file) as f:
+            lines = f.readlines()
+
+            # Read the grid size, grid, and starting position.
+            self.r, self.c = map(int, lines[0].split())
+            self.grid = [list(map(int, line.split())) for line in lines[1 : 1 + self.r]]
+            self.r0, self.c0 = map(int, lines[1 + self.r].split())
+
+            # Initialize the visited and unvisited sets.
+            unvstd = set()
+            for r in range(self.r):
+                for c in range(self.c):
+                    if self.grid[r][c] == 1:
+                        unvstd.add((r, c))
+            self.visited, self.unvisited = frozenset(), frozenset(unvstd)
 
     def getStartState(self) -> "State":
-        "*** YOUR CODE HERE ***"
-        raise NotImplementedError
+        return self.r0, self.c0, self.visited, self.unvisited
 
     def isGoalState(self, state: "State") -> bool:
-        "*** YOUR CODE HERE ***"
-        raise NotImplementedError
+        return len(state[3]) == 0
 
     def getSuccessors(self, state: "State") -> List[Tuple["State", str, int]]:
-        "*** YOUR CODE HERE ***"
-        raise NotImplementedError
+        i, j, vstd, unvstd = state
+        deltas = {"UP": (-1, 0), "DOWN": (1, 0), "LEFT": (0, -1), "RIGHT": (0, 1)}
+        res = []
+        for action in ACTION_LIST:
+            x, y = i + deltas[action][0], j + deltas[action][1]
+            if 0 <= x < self.r and 0 <= y < self.c:
+                if self.grid[x][y] == 0:
+                    res.append(((x, y, vstd, unvstd), action, 1))
+                elif self.grid[x][y] == 1:
+                    res.append(((x, y, vstd | {(x, y)}, unvstd - {(x, y)}), action, 1))
+        return res
 
     def getCostOfActions(self, actions: List[str]) -> int:
-        "*** YOUR CODE HERE ***"
-        return NotImplementedError
+        res, state = 0, self.getStartState()
+        for target_action in actions:
+            for next_state, action, cost in self.getSuccessors(state):
+                if action == target_action:
+                    res += cost
+                    state = next_state
+                    break
+            else:
+                raise RuntimeError("Invalid list of actions.")
+        return res
 
 
 def depthFirstSearch(problem: SearchProblem) -> List[str]:
@@ -196,14 +224,32 @@ def depthFirstSearch(problem: SearchProblem) -> List[str]:
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    raise NotImplementedError
+    stack = Stack()
+    stack.push((problem.getStartState(), [], set()))
+    while not stack.isEmpty():
+        state, actions, visited = stack.pop()
+        if problem.isGoalState(state):
+            return actions
+        if state in visited:
+            continue
+        for next_state, action, _ in problem.getSuccessors(state):
+            stack.push((next_state, actions + [action], visited | {state}))
+    return []
 
 
 def breadthFirstSearch(problem: SearchProblem) -> List[str]:
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    raise NotImplementedError
+    q = Queue()
+    q.push((problem.getStartState(), [], set()))
+    while not q.isEmpty():
+        state, actions, visited = q.pop()
+        if problem.isGoalState(state):
+            return actions
+        if state in visited:
+            continue
+        for next_state, action, _ in problem.getSuccessors(state):
+            q.push((next_state, actions + [action], visited | {state}))
+    return []
 
 
 def nullHeuristic(
@@ -222,7 +268,7 @@ def simpleHeuristic(
     """
     This heuristic returns the number of residences that you have not yet visited.
     """
-    raise NotImplementedError
+    return len(state[3])
 
 
 def customHeuristic(
@@ -241,8 +287,18 @@ def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[str]:
     """Search the node that has the lowest combined cost and heuristic first.
     This function takes in an arbitrary heuristic (which itself is a function) as an input.
     """
-    "*** YOUR CODE HERE ***"
-    raise NotImplementedError
+    pq = PriorityQueue()
+    pq.push((problem.getStartState(), [], set()), 0)
+    while not pq.isEmpty():
+        state, actions, visited = pq.pop()
+        if problem.isGoalState(state):
+            return actions
+        if state in visited:
+            continue
+        for next_state, action, _ in problem.getSuccessors(state):
+            priority = heuristic(next_state, problem)
+            pq.push((next_state, actions + [action], visited | {state}), priority)
+    return []
 
 
 if __name__ == "__main__":
