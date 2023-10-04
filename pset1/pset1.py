@@ -227,31 +227,33 @@ def depthFirstSearch(problem: SearchProblem) -> List[str]:
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    stack = Stack()
-    stack.push((problem.getStartState(), [], set()))
+    stack, visited = Stack(), set()
+    stack.push((problem.getStartState(), []))
     while not stack.isEmpty():
-        state, actions, visited = stack.pop()
+        state, actions = stack.pop()
         if problem.isGoalState(state):
             return actions
         if state in visited:
             continue
+        visited.add(state)
         for next_state, action, _ in problem.getSuccessors(state)[::-1]:
-            stack.push((next_state, actions + [action], visited | {state}))
+            stack.push((next_state, actions + [action]))
     return []
 
 
 def breadthFirstSearch(problem: SearchProblem) -> List[str]:
     """Search the shallowest nodes in the search tree first."""
-    q = Queue()
-    q.push((problem.getStartState(), [], set()))
+    q, visited = Queue(), set()
+    q.push((problem.getStartState(), []))
     while not q.isEmpty():
-        state, actions, visited = q.pop()
+        state, actions = q.pop()
         if problem.isGoalState(state):
             return actions
         if state in visited:
             continue
+        visited.add(state)
         for next_state, action, _ in problem.getSuccessors(state):
-            q.push((next_state, actions + [action], visited | {state}))
+            q.push((next_state, actions + [action]))
     return []
 
 
@@ -283,24 +285,27 @@ def customHeuristic(
             calls to GridworldSearchProblem.getSuccessors)
         (2) be admissible and consistent
     """
-    return 0
+    # Sum of Manhattan distances to all unvisited residences.
+    i, j, _, unvstd = state
+    return sum(abs(i - x) + abs(j - y) for x, y in unvstd)
 
 
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[str]:
     """Search the node that has the lowest combined cost and heuristic first.
     This function takes in an arbitrary heuristic (which itself is a function) as an input.
     """
-    pq = PriorityQueue()
-    pq.push((problem.getStartState(), [], set()), 0)
+    pq, min_dist = PriorityQueue(), {problem.getStartState(): 0}
+    pq.push((problem.getStartState(), []), 0)
     while not pq.isEmpty():
-        state, actions, visited = pq.pop()
+        state, actions = pq.pop()
         if problem.isGoalState(state):
             return actions
-        if state in visited:
-            continue
         for next_state, action, _ in problem.getSuccessors(state):
-            priority = heuristic(next_state, problem)
-            pq.push((next_state, actions + [action], visited | {state}), priority)
+            path_cost = min_dist[state] + 1
+            if path_cost < min_dist.get(next_state, float("inf")):
+                min_dist[next_state] = path_cost
+                priority = path_cost + heuristic(next_state, problem)
+                pq.update((next_state, actions + [action]), priority)
     return []
 
 
