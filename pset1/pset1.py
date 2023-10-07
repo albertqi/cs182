@@ -285,9 +285,10 @@ def customHeuristic(
             calls to GridworldSearchProblem.getSuccessors)
         (2) be admissible and consistent
     """
-    # Sum of Manhattan distances to all unvisited residences.
+    # Maximum Manhattan distance between current position and any unvisited residence.
     i, j, _, unvstd = state
-    return sum(abs(i - x) + abs(j - y) for x, y in unvstd)
+    dists = [abs(i - x) + abs(j - y) for x, y in unvstd]
+    return max(dists) if dists else 0
 
 
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[str]:
