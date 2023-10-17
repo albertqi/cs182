@@ -145,8 +145,9 @@ class MultiAgentSearchAgent(abc.ABC):
 
 class MinimaxAgent(MultiAgentSearchAgent):
     def get_action(self, game_state: GameState) -> Action:
-        """*** YOUR CODE HERE ***"""
-        raise NotImplementedError
+        fn = self.max_val if self.index == 0 else self.min_val
+        _, action = fn(game_state)
+        return action
 
     def max_val(self, game_state: GameState) -> Tuple[float, Optional[Action]]:
         """
@@ -155,8 +156,15 @@ class MinimaxAgent(MultiAgentSearchAgent):
          - the action necessary to take from the current state corresponding to the maximum value that is returned
             - if `game_state` is already a terminal state, then this should be `None`.
         """
-        """*** YOUR CODE HERE ***"""
-        raise NotImplementedError
+        if game_state.is_terminal():
+            return game_state.value(), None
+        max_value, max_action = float("-inf"), None
+        for action in game_state.get_actions():
+            successor = game_state.generate_successor(action)
+            value, _ = self.min_val(successor)
+            if value > max_value:
+                max_value, max_action = value, action
+        return max_value, max_action
 
     def min_val(self, game_state: GameState) -> Tuple[float, Optional[Action]]:
         """
@@ -165,9 +173,15 @@ class MinimaxAgent(MultiAgentSearchAgent):
          - the action necessary to take from the current state corresponding to the minimum value that is returned
             - if `game_state` is already a terminal state, then this should be `None`.
         """
-        "*** YOUR CODE HERE ***"
-        """*** YOUR CODE HERE ***"""
-        raise NotImplementedError
+        if game_state.is_terminal():
+            return game_state.value(), None
+        min_value, min_action = float("inf"), None
+        for action in game_state.get_actions():
+            successor = game_state.generate_successor(action)
+            value, _ = self.max_val(successor)
+            if value < min_value:
+                min_value, min_action = value, action
+        return min_value, min_action
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
