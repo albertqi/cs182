@@ -186,20 +186,41 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     def get_action(self, game_state: GameState):
-        """*** YOUR CODE HERE ***"""
-        raise NotImplementedError
+        fn = self.max_val if self.index == 0 else self.min_val
+        _, action = fn(game_state, float("-inf"), float("inf"))
+        return action
 
     def max_val(
         self, game_state: GameState, alpha: float, beta: float
     ) -> Tuple[float, Optional[Action]]:
-        """*** YOUR CODE HERE ***"""
-        raise NotImplementedError
+        if game_state.is_terminal():
+            return game_state.value(), None
+        max_value, max_action = float("-inf"), None
+        for action in game_state.get_actions():
+            successor = game_state.generate_successor(action)
+            value, _ = self.min_val(successor, alpha, beta)
+            if value > max_value:
+                max_value, max_action = value, action
+            if max_value >= beta:  # Will not ever go down this path, so return early.
+                return max_value, max_action
+            alpha = max(alpha, max_value)
+        return max_value, max_action
 
     def min_val(
         self, game_state: GameState, alpha: float, beta: float
     ) -> Tuple[float, Optional[Action]]:
-        """*** YOUR CODE HERE ***"""
-        raise NotImplementedError
+        if game_state.is_terminal():
+            return game_state.value(), None
+        min_value, min_action = float("inf"), None
+        for action in game_state.get_actions():
+            successor = game_state.generate_successor(action)
+            value, _ = self.max_val(successor, alpha, beta)
+            if value < min_value:
+                min_value, min_action = value, action
+            if min_value <= alpha:  # Will not ever go down this path, so return early.
+                return min_value, min_action
+            beta = min(beta, min_value)
+        return min_value, min_action
 
 
 class RandomAgent(MultiAgentSearchAgent):
