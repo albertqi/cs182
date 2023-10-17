@@ -341,3 +341,5 @@ if __name__ == "__main__":
     dictionary = GhostDictionary("dictionary.txt")
     prefix = "enf"
     play_game(dictionary, prefix, 0, MinimaxAgent, MinimaxAgent)
+    for prfx in ["beh", "feb", "gw"]:
+        print(prfx, simulate_versus_random(dictionary, prefix))
