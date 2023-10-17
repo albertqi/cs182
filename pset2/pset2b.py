@@ -237,8 +237,42 @@ class OptimizedAgainstRandomAgent(MultiAgentSearchAgent):
     """
 
     def get_action(self, game_state: GameState) -> Action:
-        """*** YOUR CODE HERE ***"""
-        raise NotImplementedError
+        fn = self.max_val if self.index == 0 else self.min_val
+        _, action = fn(game_state)
+        return action
+
+    def max_val(self, game_state: GameState) -> Tuple[float, Optional[Action]]:
+        if game_state.is_terminal():
+            return game_state.value(), None
+        max_value, max_action = float("-inf"), None
+        for action in game_state.get_actions():
+            successor = game_state.generate_successor(action)
+            value = self.expected_val(successor)
+            if value > max_value:
+                max_value, max_action = value, action
+        return max_value, max_action
+
+    def min_val(self, game_state: GameState) -> Tuple[float, Optional[Action]]:
+        if game_state.is_terminal():
+            return game_state.value(), None
+        min_value, min_action = float("inf"), None
+        for action in game_state.get_actions():
+            successor = game_state.generate_successor(action)
+            value = self.expected_val(successor)
+            if value < min_value:
+                min_value, min_action = value, action
+        return min_value, min_action
+
+    def expected_val(self, game_state: GameState) -> float:
+        if game_state.is_terminal():
+            return game_state.value()
+        fn = self.max_val if self.index == 0 else self.min_val
+        expected_value = 0
+        for action in game_state.get_actions():
+            successor = game_state.generate_successor(action)
+            value, _ = fn(successor)
+            expected_value += value
+        return expected_value / len(game_state.get_actions())
 
 
 def play_game(
