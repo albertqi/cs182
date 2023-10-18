@@ -40,9 +40,21 @@ def linear_programming(pm):
     autograder tests.
     """
 
-    """*** YOUR CODE HERE ***"""
+    # Fiona tries to minimize Paul's payoff (minimax).
+    c = [0, 0, 0, 1]  # [x_1, x_2, x_3, V]
+    A_ub = [[pm[i][j][1] for i in range(3)] + [-1] for j in range(3)]
+    b_ub = [0, 0, 0]
+    A_eq = [[1, 1, 1, 0]]
+    b_eq = [1]
+    bounds = [(0, None), (0, None), (0, None), (None, None)]
+    fiona = linprog(c, A_ub, b_ub, A_eq, b_eq, bounds, method="highs").x
 
-    raise NotImplementedError
+    # Paul tries to maximize his own payoff (maximin).
+    c = [0, 0, 0, -1]  # [x_1, x_2, x_3, V]
+    A_ub = [[-pm[i][j][1] for j in range(3)] + [1] for i in range(3)]
+    paul = linprog(c, A_ub, b_ub, A_eq, b_eq, bounds, method="highs").x
+
+    return (fiona, paul)
 
 
 if __name__ == "__main__":
