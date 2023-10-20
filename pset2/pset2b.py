@@ -342,4 +342,5 @@ if __name__ == "__main__":
     prefix = "enf"
     play_game(dictionary, prefix, 0, MinimaxAgent, MinimaxAgent)
     for prfx in ["beh", "feb", "gw"]:
-        print(prfx, simulate_versus_random(dictionary, prefix))
+        optimal_val, minimax_val = simulate_versus_random(dictionary, prfx)
+        print(prfx, (optimal_val, minimax_val), f"delta: {optimal_val - minimax_val}")
