@@ -51,22 +51,15 @@ def Q(state, action, gamma, V):
     return val
 
 
-def value_iteration(policy, gamma, nsteps=float("inf")):
+def total_values(policy, gamma, nsteps):
+    total_vals = []
+
     V = np.zeros(n_states, dtype=float)
-    vals = []
+    for _ in range(nsteps):
+        total_vals.append(np.sum(V))
+        V = np.array([Q(state, policy[state], gamma, V) for state in range(n_states)])
 
-    i = 0
-    while i < nsteps:
-        vals.append(np.sum(V))
-
-        V_next = np.zeros(n_states, dtype=float)
-        for state in range(n_states):
-            action = policy[state]
-            V_next[state] = Q(state, action, gamma, V)
-        V = V_next
-        i += 1
-
-    return vals
+    return total_vals
 
 
 def policy_iteration(gamma):
@@ -76,40 +69,31 @@ def policy_iteration(gamma):
     What this function returns is up to you and how you want to determine the sum of utilities at each iteration in the plots.
     """
 
-    theta = 1e-5  # Define a theta that determines if the change in utilities from iteration to iteration is "small enough".
+    # Define a theta that determines if the change in utilities from iteration to iteration is "small enough".
+    theta = 1e-5
 
-    policy = np.zeros(
-        n_states, dtype=int
-    )  # Define your policy, which begins as Netflix regardless of state.
+    # Define your policy, which begins as Netflix regardless of state.
+    policy = np.zeros(n_states, dtype=int)
 
     while True:
-        # Policy Evaluation
+        ### Policy Evaluation ###
         V = np.zeros(n_states, dtype=float)
-        while True:
-            V_next = np.zeros(n_states, dtype=float)
-            for state in range(n_states):
-                action = policy[state]
-                for new_state in range(n_states):
-                    V_next[state] += t_p[state, action, new_state] * (
-                        r[state, action] + gamma * V[new_state]
-                    )
-            if np.max(np.abs(V - V_next)) <= theta:
-                V = V_next
-                break
-            V = V_next
+        V_prev = np.ones(n_states, dtype=float) * np.inf
+        while np.max(np.abs(V - V_prev)) > theta:
+            V_prev = V
+            V = np.array(
+                [Q(state, policy[state], gamma, V) for state in range(n_states)]
+            )
 
-        # Policy Iteration
+        ### Policy Iteration ###
         policy_next = np.zeros(n_states, dtype=int)
         for state in range(n_states):
-            action_vals = np.zeros(n_actions, dtype=float)
-            for action in range(n_actions):
-                for new_state in range(n_states):
-                    action_vals[action] += t_p[state, action, new_state] * (
-                        r[state, action] + gamma * V[new_state]
-                    )
+            action_vals = np.array(
+                [Q(state, action, gamma, V) for action in range(n_actions)]
+            )
             policy_next[state] = np.argmax(action_vals)
 
-        # Policy Change Check
+        ### Policy Change Check ###
         if np.all(policy == policy_next):
             return policy
         policy = policy_next
@@ -138,12 +122,12 @@ def value_plots(p1_vals, p2_vals):
 if __name__ == "__main__":
     # Policy iteration to verify your answer from problem 2 part c, with gamma = 0.9.
     p1 = policy_iteration(0.9)
-    p1_vals = value_iteration(p1, 0.9, 50)
+    p1_vals = total_values(p1, 0.9, 50)
     print(p1)
 
     # Policy iteration for problem 2 part d, with gamma = 0.8.
     p2 = policy_iteration(0.8)
-    p2_vals = value_iteration(p2, 0.8, 50)
+    p2_vals = total_values(p2, 0.8, 50)
     print(p2)
 
     value_plots(p1_vals, p2_vals)
