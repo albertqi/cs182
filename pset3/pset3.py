@@ -44,6 +44,31 @@ r[1, 0] = 4  #  r[PIP, Code]      = 4
 r[1, 1] = 10  # r[PIP, Netflix]   = 10
 
 
+def Q(state, action, gamma, V):
+    val = 0
+    for new_state in range(n_states):
+        val += t_p[state, action, new_state] * (r[state, action] + gamma * V[new_state])
+    return val
+
+
+def value_iteration(policy, gamma, nsteps=float("inf")):
+    V = np.zeros(n_states, dtype=float)
+    vals = []
+
+    i = 0
+    while i < nsteps:
+        vals.append(np.sum(V))
+
+        V_next = np.zeros(n_states, dtype=float)
+        for state in range(n_states):
+            action = policy[state]
+            V_next[state] = Q(state, action, gamma, V)
+        V = V_next
+        i += 1
+
+    return vals
+
+
 def policy_iteration(gamma):
     """
     You should find the optimal policy for Liz under the constrants of discount factor gamma, which is given as a parameter.
@@ -68,7 +93,7 @@ def policy_iteration(gamma):
                     V_next[state] += t_p[state, action, new_state] * (
                         r[state, action] + gamma * V[new_state]
                     )
-            if np.max(np.abs(V - V_next)) < theta:
+            if np.max(np.abs(V - V_next)) <= theta:
                 V = V_next
                 break
             V = V_next
@@ -90,7 +115,7 @@ def policy_iteration(gamma):
         policy = policy_next
 
 
-def value_plots():
+def value_plots(p1_vals, p2_vals):
     """
     Your plots should indicate the cumulative utility summed across all states across iterations. More specifically, your y-val
     should indicate the total amount of utility acumulated across the states and actions as the iterations progress. This means
@@ -111,11 +136,16 @@ def value_plots():
 
 
 if __name__ == "__main__":
-    policy_iteration(
-        0.9
-    )  # Policy iteration to verify your answer from problem 2 part c, with gamma = 0.9.
-    policy_iteration(0.8)  # Policy iteration for problem 2 part d, with gamma = 0.8.
+    # Policy iteration to verify your answer from problem 2 part c, with gamma = 0.9.
+    p1 = policy_iteration(0.9)
+    p1_vals = value_iteration(p1, 0.9, 50)
+    print(p1)
 
-    value_plots()
+    # Policy iteration for problem 2 part d, with gamma = 0.8.
+    p2 = policy_iteration(0.8)
+    p2_vals = value_iteration(p2, 0.8, 50)
+    print(p2)
+
+    value_plots(p1_vals, p2_vals)
     # You will need to find some way to get the total utility values to the value_plots function. For example, you could pass
     # in the policies or you could pass in the cumulative sum of utility values.
