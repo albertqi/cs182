@@ -45,13 +45,20 @@ r[1, 1] = 10  # r[PIP, Netflix]   = 10
 
 
 def Q(state, action, gamma, V):
-    val = 0
-    for new_state in range(n_states):
-        val += t_p[state, action, new_state] * (r[state, action] + gamma * V[new_state])
-    return val
+    """
+    Returns the Q-value of the given `state` and `action` using the discount
+    factor `gamma` and the values of the states `V`.
+    """
+
+    return np.sum(t_p[state, action, :] * (r[state, action] + gamma * V))
 
 
 def total_values(policy, gamma, nsteps):
+    """
+    Returns the total utility values of the given `policy` using the discount
+    factor `gamma` for `nsteps` number of steps.
+    """
+
     total_vals = []
 
     V = np.zeros(n_states, dtype=float)
@@ -94,7 +101,7 @@ def policy_iteration(gamma):
             policy_next[state] = np.argmax(action_vals)
 
         ### Policy Change Check ###
-        if np.all(policy == policy_next):
+        if np.array_equal(policy, policy_next):
             return policy
         policy = policy_next
 
