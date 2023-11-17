@@ -80,7 +80,7 @@ def policy_iteration(gamma):
     theta = 1e-5
 
     # Define your policy, which begins as Netflix regardless of state.
-    policy = np.zeros(n_states, dtype=int)
+    policy = np.ones(n_states, dtype=int)
 
     while True:
         ### Policy Evaluation ###
@@ -92,7 +92,7 @@ def policy_iteration(gamma):
                 [Q(state, policy[state], gamma, V) for state in range(n_states)]
             )
 
-        ### Policy Iteration ###
+        ### Policy Improvement ###
         policy_next = np.zeros(n_states, dtype=int)
         for state in range(n_states):
             action_vals = np.array(
