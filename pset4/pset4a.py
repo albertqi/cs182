@@ -277,10 +277,11 @@ class QLearning:
         """
         Returns action based on Q-values using the epsilon-greedy exploration strategy
         """
-        ##########################
-        ##### YOUR CODE HERE #####
-        ##########################
-        raise NotImplementedError
+        if np.random.random() <= self.epsilon:
+            return np.random.choice(self.num_actions)
+        else:
+            actions = np.argwhere(self.Q[state] == np.max(self.Q[state]))
+            return np.random.choice(actions.flatten())
 
     def q_learning(
         self, num_episodes=10000, interval=1000, display=False, step_limit=10000
@@ -315,10 +316,7 @@ class QLearning:
                 reward = self.rewards[next_state]
 
                 # Update the state_action_counter
-                ##########################
-                ##### YOUR CODE HERE #####
-                ##########################
-                raise NotImplementedError
+                self.state_action_counter[curr_state][action] += 1
 
                 # update Q values. Use the alpha schedule given here. k_SA = how many time we took action A at state S
                 alpha = min(
@@ -326,10 +324,11 @@ class QLearning:
                 )
 
                 # Q-learning update rule
-                ##########################
-                ##### YOUR CODE HERE #####
-                ##########################
-                raise NotImplementedError
+                self.Q[curr_state][action] += alpha * (
+                    reward
+                    + self.gamma * np.max(self.Q[next_state])
+                    - self.Q[curr_state][action]
+                )
 
                 num_steps += 1
                 curr_state = next_state
