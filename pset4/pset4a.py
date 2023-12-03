@@ -138,12 +138,19 @@ class DynamicProgramming:
         the optimal policy, where policies are encoded as indicated in the `create_initial_policy` docstring.
         """
         V_prev = np.ones(self.num_states, dtype=float) * np.inf
-        while np.max(np.abs(self.V - V_prev)) > self.epsilon:
+        threshold = self.epsilon * (1 - self.gamma) / self.gamma
+        while np.max(np.abs(self.V - V_prev)) > threshold:
             V_prev = self.V.copy()
+            V, policy = self.V.copy(), self.policy.copy()
             for state in range(self.num_states):
-                Z = self.updated_action_values(state)
-                self.V[state] = self.rewards[state] + self.gamma * np.max(Z)
-                self.policy[state] = np.argmax(Z)
+                if self.terminal_states[state]:
+                    V[state] = self.rewards[state]
+                    policy[state] = 0
+                else:
+                    Z = self.updated_action_values(state)
+                    V[state] = self.rewards[state] + self.gamma * np.max(Z)
+                    policy[state] = np.argmax(Z)
+            self.V, self.policy = V, policy
 
     def play_game(self, display=False):
         """
