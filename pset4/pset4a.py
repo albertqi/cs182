@@ -72,35 +72,35 @@ class DynamicProgramming:
         self.num_states = env.observation_space.n
         self.num_actions = env.action_space.n
         self.policy = self.create_initial_policy()
-        self.V = np.zeros(
-            self.num_states
-        )  # Vector of estimated utilities for each state, states are numbered 0-15, initialized at zero
-        self.P = (
-            self.env.P
-        )  # Dict of a Dict of list of tuples. Outer dict keys = states, 0-15, index into a state, you get a dict of 4 actions that can be performed, for each action we have
+
+        # Vector of estimated utilities for each state, states are numbered 0-15, initialized at zero
+        self.V = np.zeros(self.num_states)
+
+        # Dict of a Dict of list of tuples. Outer dict keys = states, 0-15, index into a state, you get a dict of 4 actions that can be performed, for each action we have
         # a list of possiable states that you can end up in, then it's a tuple that tells us what prob of ending up in each of those states, the state indexer, the reward of doing that, finally
         # a boolean indicator of if its a terminal state or not
+        self.P = self.env.P
+
         self.gamma = gamma  # Discount rate
         self.epsilon = epsilon  # Convergence parameter
-        self.rewards = {
-            state: 0 for state in range(self.num_states)
-        }  # The reward function R(s)
-        self.terminal_states = {
-            state: False for state in range(self.num_states)
-        }  # Returns a True or False indicating if the game state provided
+
+        # The reward function R(s)
+        self.rewards = {state: 0 for state in range(self.num_states)}
+
+        # Returns a True or False indicating if the game state provided
         # is in a terminal state (i.e. no further actions can be taken)
+        self.terminal_states = {state: False for state in range(self.num_states)}
 
         for state, actions in env.P.items():
             for action, action_data in actions.items():
                 prob, state, r, is_end = action_data[0]
                 if is_end == True:
-                    self.terminal_states[
-                        state
-                    ] = True  # Record if terminal state (ice hole or goal)
+                    # Record if terminal state (ice hole or goal)
+                    self.terminal_states[state] = True
+
                     if r == 1:
-                        self.rewards[
-                            state
-                        ] = 1  # If a goal state, then R(s) = 1, else R(s) left at 0
+                        # If a goal state, then R(s) = 1, else R(s) left at 0
+                        self.rewards[state] = 1
 
     def create_initial_policy(self):
         """
@@ -109,7 +109,7 @@ class DynamicProgramming:
 
         You are welcome to modify this function to test out the performance of different policies.
         """
-        # policy is num_states array (deterministic)
+        # Policy is num_states array (deterministic)
         policy = np.zeros(self.num_states, dtype=int)
         return policy
 
@@ -165,26 +165,29 @@ class DynamicProgramming:
         total_reward = 0
 
         while not finished:
-            # display current state
+            # Display current state
             if display:
                 system("cls")
                 self.env.render()
                 sleep(0.1)
 
-            # find next state
+            # Find next state
             action = self.policy[curr_state]
             try:
                 new_state, reward, finished, info = self.env.step(action)
             except:
                 new_state, reward, finished, info, _ = self.env.step(action)
-            reward = self.rewards[
-                new_state
-            ]  # Rewards are realized by entering a new state
+
+            # Rewards are realized by entering a new state
+            reward = self.rewards[new_state]
+
             total_reward += reward
             episodes.append([new_state, action, reward])
-            curr_state = new_state  # Set the current state equal to the new state for the next while loop iteration
 
-        # display end result
+            # Set the current state equal to the new state for the next while loop iteration
+            curr_state = new_state
+
+        # Display end result
         if display:
             system("cls")
             self.env.render()
@@ -192,7 +195,7 @@ class DynamicProgramming:
         print(f"Total Reward from this run: {total_reward}")
         return episodes
 
-    # averages rewards over a number of episodes
+    # Averages rewards over a number of episodes
     def compute_episode_rewards(self, num_episodes=100, step_limit=1000):
         """
         Computes the mean, variance, and maximum of episode reward over num_episodes episodes
@@ -213,7 +216,9 @@ class DynamicProgramming:
                 reward = self.rewards[new_state]
                 total_rewards[episode] += reward
                 num_steps += 1
-                curr_state = new_state  # Set the current state equal to the new state for the next while loop iteration
+
+                # Set the current state equal to the new state for the next while loop iteration
+                curr_state = new_state
 
             if reward != 0:
                 # If the agent falls into a hole and gets a reward of zero, then record that as zero (already the value of the array)
@@ -252,33 +257,33 @@ class QLearning:
         self.env = env
         self.num_states = env.observation_space.n
         self.num_actions = env.action_space.n
-        self.Q = np.zeros(
-            (self.num_states, self.num_actions)
-        )  # A 2d-array of states and the values of each action
-        self.state_action_counter = np.zeros(
-            (self.num_states, self.num_actions)
-        )  # keeps track of k_sa
+
+        # A 2d-array of states and the values of each action
+        self.Q = np.zeros((self.num_states, self.num_actions))
+
+        # Keeps track of k_sa
+        self.state_action_counter = np.zeros((self.num_states, self.num_actions))
+
         self.gamma = gamma  # Discount rate
         self.epsilon = epsilon  # Exploration rate
-        self.rewards = {
-            state: 0 for state in range(self.num_states)
-        }  # The reward function R(s)
-        self.terminal_states = {
-            state: False for state in range(self.num_states)
-        }  # Returns a True or False indicating if the game state provided
+
+        # The reward function R(s)
+        self.rewards = {state: 0 for state in range(self.num_states)}
+
+        # Returns a True or False indicating if the game state provided
         # is in a terminal state (i.e. no further actions can be taken)
+        self.terminal_states = {state: False for state in range(self.num_states)}
 
         for state, actions in env.P.items():
             for action, action_data in actions.items():
                 prob, state, r, is_end = action_data[0]
                 if is_end == True:
-                    self.terminal_states[
-                        state
-                    ] = True  # Record if terminal state (ice hole or goal)
+                    # Record if terminal state (ice hole or goal)
+                    self.terminal_states[state] = True
+
                     if r == 1:
-                        self.rewards[
-                            state
-                        ] = 1  # If a goal state, then R(s) = 1, else R(s) left at 0
+                        # If a goal state, then R(s) = 1, else R(s) left at 0
+                        self.rewards[state] = 1
 
     def choose_action(self, state: State) -> Action:
         """
@@ -308,7 +313,7 @@ class QLearning:
             num_steps = 0
 
             while not finished and num_steps < step_limit:
-                # display current state
+                # Display current state
                 if display:
                     system("cls")
                     self.env.render()
@@ -325,7 +330,7 @@ class QLearning:
                 # Update the state_action_counter
                 self.state_action_counter[curr_state][action] += 1
 
-                # update Q values. Use the alpha schedule given here. k_SA = how many time we took action A at state S
+                # Update Q values. Use the alpha schedule given here. k_SA = how many time we took action A at state S
                 alpha = min(
                     0.1, 10 / self.state_action_counter[curr_state][action] ** 0.8
                 )
@@ -340,7 +345,7 @@ class QLearning:
                 num_steps += 1
                 curr_state = next_state
 
-            # run tests every interval episodes
+            # Run tests every interval episodes
             if e % interval == 0:
                 print(str(e) + "/" + str(num_episodes), end=" ")
                 mean, var, best = self.compute_episode_rewards(num_episodes=100)
@@ -348,7 +353,7 @@ class QLearning:
 
         return mean_returns
 
-    # averages rewards over a number of episodes
+    # Averages rewards over a number of episodes
     def compute_episode_rewards(self, num_episodes=100, step_limit=1000):
         """
         Computes the mean, variance, and maximum of episode reward over num_episodes episodes
@@ -386,16 +391,17 @@ class QLearning:
 
 if __name__ == "__main__":
     ### Part 2 - Value Iteration ###
-    env = gym.make(
-        "FrozenLake-v1", map_name="4x4", is_slippery=True
-    )  # Set up the Frozen lake environmnet
+
+    # Set up the Frozen lake environment
+    env = gym.make("FrozenLake-v1", map_name="4x4", is_slippery=True)
     env.reset()
 
     print("Testing Value Iteration...")
     sleep(1)
-    my_policy = DynamicProgramming(
-        env, gamma=0.9, epsilon=0.001
-    )  # Instantiate class object
+
+    # Instantiate class object
+    my_policy = DynamicProgramming(env, gamma=0.9, epsilon=0.001)
+
     my_policy.value_iteration()  # Iterate to derive the final policy
     my_policy.play_game()  # Play through one episode of the game under the current policy
     my_policy.print_rewards_info()  # Prints information from compute_episode_rewards
@@ -423,9 +429,9 @@ if __name__ == "__main__":
 
     print("Testing Q-Learning...")
     sleep(1)
-    my_policy = QLearning(
-        env, gamma=0.9, epsilon=0.01
-    )  # Instanciate a new class object with the Q learning methods
+
+    # Instantiate a new class object with the Q learning methods
+    my_policy = QLearning(env, gamma=0.9, epsilon=0.01)
 
     ### Part 4 ###
 
