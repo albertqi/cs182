@@ -411,10 +411,11 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
 
-    ##########################
-    ##### YOUR CODE HERE #####
-    ##########################
-    raise NotImplementedError
+    plt.plot(range(1, 1001), num_steps_array)
+    plt.title("Number of Steps vs. Episode")
+    plt.xlabel("Episode")
+    plt.ylabel("Number of Steps")
+    plt.show()
 
     ### Part 3 - Model Free Q-Learning ###
     env = gym.make("FrozenLake-v1", map_name="4x4", is_slippery=True)
