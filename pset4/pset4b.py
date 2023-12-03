@@ -88,26 +88,27 @@ class TensorFlowMNISTClassifier(MNISTClassificationModel):
         """
         Initialize your `neural_net_model`.
         """
-        ##########################
-        ##### YOUR CODE HERE #####
-        ##########################
-        raise NotImplementedError
+        layers = [
+            tf.keras.layers.Flatten(input_shape=(28, 28)),
+            tf.keras.layers.Dense(128, activation="relu"),
+            tf.keras.layers.Dense(10),
+        ]
+        self.neural_net_model = tf.keras.models.Sequential(layers)
+        self.neural_net_model.compile(
+            optimizer="adam",
+            loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+            metrics=["accuracy"],
+        )
 
         assert isinstance(self.neural_net_model, tf.Module)
 
     def train(self, X_train: np.ndarray, y_train: np.ndarray):
         """Fitting proceadure of the network on an inut X_train and y_train data set"""
-        ##########################
-        ##### YOUR CODE HERE #####
-        ##########################
-        raise NotImplementedError
+        self.neural_net_model.fit(X_train, y_train, epochs=80)
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """Network forward pass, for an input dataset X, return the output predictions"""
-        ##########################
-        ##### YOUR CODE HERE #####
-        ##########################
-        raise NotImplementedError
+        return np.argmax(self.neural_net_model.predict(X), axis=1)
 
 
 def train_and_evaluate_mnist_model(
