@@ -124,10 +124,11 @@ class DynamicProgramming:
 
         based on current value function self.V for U(s')
         """
-        ##########################
-        ##### YOUR CODE HERE #####
-        ##########################
-        raise NotImplementedError
+        Z = np.zeros(self.num_actions, dtype=float)
+        for action in range(self.num_actions):
+            for prob, next_state, _, _ in self.P[state][action]:
+                Z[action] += prob * self.V[next_state]
+        return Z
 
     def value_iteration(self):
         """
@@ -136,10 +137,13 @@ class DynamicProgramming:
         correct values for each state. Additionally, self.policy should be an array that contains
         the optimal policy, where policies are encoded as indicated in the `create_initial_policy` docstring.
         """
-        ##########################
-        ##### YOUR CODE HERE #####
-        ##########################
-        raise NotImplementedError
+        V_prev = np.ones(self.num_states, dtype=float) * np.inf
+        while np.max(np.abs(self.V - V_prev)) > self.epsilon:
+            V_prev = self.V.copy()
+            for state in range(self.num_states):
+                Z = self.updated_action_values(state)
+                self.V[state] = self.rewards[state] + self.gamma * np.max(Z)
+                self.policy[state] = np.argmax(Z)
 
     def play_game(self, display=False):
         """
