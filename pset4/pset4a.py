@@ -440,8 +440,8 @@ if __name__ == "__main__":
     # gamma=0.9, epsilon=0.01. How does your Q-learning agent compare to the value-iteration agent following the
     # policy derived from part 2?
 
-    mean_returns = my_policy.q_learning()
-    plt.plot(range(1000, 10001, 1000), mean_returns)
+    mean_returns = my_policy.q_learning(num_episodes=100000, interval=1000)
+    plt.plot(range(1000, 100001, 1000), mean_returns)
     plt.title("Mean Returns vs. Episode")
     plt.xlabel("Episode")
     plt.ylabel("Mean Returns")
